@@ -51,9 +51,9 @@
 
         <div class="board container">
             <table>
-                <tr v-for="i in [0, 1, 2]">
-                    <td v-on:click="play(i,j)" v-for="j in [0, 1, 2]">
-                        ${board[i * 3 + j]}
+                <tr v-for="i in [0, 1, 2, 3, 4, 5, 6, 7]">
+                    <td v-on:click="play(i,j)" v-for="j in [0, 1, 2, 3, 4, 5, 6, 7]">
+                        ${board[i * 8 + j]}
                     </td>
                 </tr>
             </table>

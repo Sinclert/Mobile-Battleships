@@ -8,7 +8,14 @@ var app = function() {
 	// Information and fields about the app
     var self = {};
     self.my_identity = randomString(20);
-    self.null_board = [" ", " ", " ", " ", " ", " ", " ", " ", " "];
+    self.null_board = [" ", " ", " ", " ", " ", " ", " ", " ",
+					   " ", " ", " ", " ", " ", " ", " ", " ",
+					   " ", " ", " ", " ", " ", " ", " ", " ",
+					   " ", " ", " ", " ", " ", " ", " ", " ",
+					   " ", " ", " ", " ", " ", " ", " ", " ",
+					   " ", " ", " ", " ", " ", " ", " ", " ",
+					   " ", " ", " ", " ", " ", " ", " ", " ",
+					   " ", " ", " ", " ", " ", " ", " ", " "];
     self.is_configured = false;
     self.player_1 = null;
     self.player_2 = null;
