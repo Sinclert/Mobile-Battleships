@@ -256,7 +256,7 @@ var app = function() {
             magic_word: "",
             chosen_magic_word: null,
             need_new_magic_word: false,
-            board_1: self.null_board,
+            board_1: getBoard(),
             is_other_present: false,
             is_my_turn: false
         },
