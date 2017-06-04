@@ -19,6 +19,7 @@ var app = function() {
     self.is_configured = false;
     self.player_1 = null;
     self.player_2 = null;
+	self.turn_counter = 0;
 	
 	
 	// General variables to use along the app
@@ -70,18 +71,17 @@ var app = function() {
 	
     /* Main function for sending the state */
     self.send_state = function () {
-        $.post(server_url + 'store',
-            {
-                key: self.vue.chosen_magic_word,
-                val: JSON.stringify(
-                    {
-                        'player_1': self.player_1,
-                        'player_2': self.player_2,
-                        'board': self.vue.board_1
-                    }
-                )
-            }
-        );
+        $.post(server_url + 'store', {
+			
+			key: self.vue.chosen_magic_word,
+			val: JSON.stringify({
+				
+				'player_1': self.player_1,
+				'player_2': self.player_2,
+				'board_1': self.vue.board_1,
+				'turn_counter': self.turn_counter
+			})
+		});
     };
 	
 	
@@ -93,6 +93,7 @@ var app = function() {
         if (!data.result) {
             self.player_1 = self.my_identity;
             self.player_2 = null;
+			self.turn_counter = 0;
             self.vue.board_1 = self.null_board;
             self.vue.is_my_turn = false;
             self.send_state();
@@ -104,6 +105,7 @@ var app = function() {
             self.server_answer = JSON.parse(data.result);
             self.player_1 = self.server_answer.player_1;
             self.player_2 = self.server_answer.player_2;
+			self.turn_counter = self.server_answer.turn_counter;
 			
 			// Some player is missing, we cannot play yet
             if (self.player_1 === null || self.player_2 === null) {
@@ -158,43 +160,31 @@ var app = function() {
 	/*	Updates the local variables with the information provided by the server
 		We should be aware of the possibility of receiving unordered states */
     self.update_local_vars = function (server_answer) {
-		
-        // First, figures out our role.
-        if (server_answer.player_2 === self.my_identity) {
-            self.vue.my_role = 'o';
-        }
-		else if (server_answer.player_1 === self.my_identity) {
-            self.vue.my_role = 'x';
-        }
-		else {
-            self.vue.my_role = ' ';
-        }
 
         /* Reconciles the board, and computes whose turn it is */
         var device_has_newer_state = false;
-        for (var i = 0 ; i < 9 ; i++) {
+        for (var i = 0 ; i < 64 ; i++) {
 			
 			// The server has new information for this board
-            if (self.vue.board_1[i] === ' ' || server_answer.board[i] !== ' ') {
-                Vue.set(self.vue.board_1, i, server_answer.board[i]);
+            if (self.vue.board_1[i] === ' ' || server_answer.board_1[i] !== ' ') {
+                Vue.set(self.vue.board_1, i, server_answer.board_1[i]);
             }
 			
 			// The device has newer state
-			else if (self.vue.board_1[i] !== ' ' && server_answer.board[i] === ' ') {
+			else if (self.vue.board_1[i] !== ' ' && server_answer.board_1[i] === ' ') {
                 device_has_newer_state = true;
             }
 			
-			else if (self.vue.board_1[i] !== server_answer.board[i]
-                && self.vue.board_1[i] !== ' ' && server_answer.board[i] !== ' ')  {
+			else if (self.vue.board_1[i] !== server_answer.board_1[i]
+                && self.vue.board_1[i] !== ' ' && server_answer.board_1[i] !== ' ')  {
                 console.log("Board inconsistency at: " + i);
                 console.log("Local:" + self.vue.board_1[i]);
-                console.log("Server:" + server_answer.board[i]);
+                console.log("Server:" + server_answer.board_1[i]);
             }
         }
 
-        // Compute if it is my turn based onf the reconciled board
-        self.vue.is_my_turn = (self.vue.board_1 !== null) &&
-            (self.vue.my_role === whose_turn(self.vue.board_1));
+        // Compute if it is my turn based on the reconciled board
+        self.vue.is_my_turn = ((self.vue.board_1 !== null) && whose_turn(server_answer.turn_counter));
 
         // If we have newer state than the server, we send it to the server
         if (device_has_newer_state) {
@@ -204,22 +194,23 @@ var app = function() {
 	
 	
 	
-	/* Function to determine which of the two roles we have */
-    function whose_turn(board) {
-        num_x = 0;
-        num_o = 0;
+	/* Determines which turn is it depending on the 'turn counter' */
+    function whose_turn(turn_counter) {
 		
-        for (var i = 0; i < 9; i++) {
-            if (board[i] === 'x') num_x += 1;
-            if (board[i] === 'o') num_o += 1;
-        }
+		// If the number is even and we are player 1: our turn
+		if ((turn_counter % 2 === 0) && (self.my_identity === self.player_1)){
+			return true;
+		}
 		
-        if (num_o >= num_x) {
-            return 'x';
-        }
+		// If the number is odd and we are player 2: our turn
+		else if ((turn_counter % 2 === 1) && (self.my_identity === self.player_2)){
+			return true;
+		}
+		
+		// Otherwise: it is not our turn
 		else {
-            return 'o';
-        }
+			return false;
+		}
     }
 	
 	
@@ -233,7 +224,6 @@ var app = function() {
         // Resets board and turn
         self.vue.board_1 = self.null_board;
         self.vue.is_my_turn = false;
-        self.vue.my_role = "";
     };
 	
 	
@@ -242,15 +232,16 @@ var app = function() {
     self.play = function (i, j) {
 		
         // Check if it is not our turn or the square is not empty
-        if ((!self.vue.is_my_turn) || (self.vue.board_1[i * 3 + j] !== ' ')) {
+        if ((!self.vue.is_my_turn) || (self.vue.board_1[i * 8 + j] !== ' ')) {
             return;
         }
 		
         // Update the clicked position
-        Vue.set(self.vue.board_1, i * 3 + j, self.vue.my_role);
+        Vue.set(self.vue.board_1, i * 8 + j, 'X');
 		
         // Update the server state
         self.vue.is_my_turn = false;
+		self.turn_counter += 1;
         self.send_state();
     };
 	
@@ -265,8 +256,7 @@ var app = function() {
             magic_word: "",
             chosen_magic_word: null,
             need_new_magic_word: false,
-            my_role: "",
-            board: self.null_board,
+            board_1: self.null_board,
             is_other_present: false,
             is_my_turn: false
         },
