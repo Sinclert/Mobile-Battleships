@@ -17,7 +17,6 @@ var app = function() {
 					   " ", " ", " ", " ", " ", " ", " ", " ",
 					   " ", " ", " ", " ", " ", " ", " ", " ",
 					   " ", " ", " ", " ", " ", " ", " ", " "];
-    self.is_configured = false;
     self.player_1 = null;
     self.player_2 = null;
 	self.turn_counter = 0;
@@ -37,12 +36,10 @@ var app = function() {
 	
 	
 	
-	/* Once Cordova has finished its own initialization */
+	/* Listoner toshow vue-div once the browser page is ready */
     self.ondeviceready = function () {
         console.log("The device is ready");
-		
         $("#vue-div").show();
-        self.is_configured = true;
     };
 	
 	
@@ -84,7 +81,7 @@ var app = function() {
     /* Process the data once received and updates local variables */
     self.process_server_data = function (data) {
 		
-        // If data is null, we send our data
+        // The first player to introduce the magic word generates the boards
         if (!data.result) {
             self.player_1 = self.my_identity;
             self.player_2 = null;
@@ -96,13 +93,13 @@ var app = function() {
 		
 		else {
 			
-            // I technically do not need to assign this to self, but it helps debug the code
-            self.server_answer = JSON.parse(data.result);
-            self.player_1 = self.server_answer.player_1;
-            self.player_2 = self.server_answer.player_2;
-			self.vue.board_1 = self.server_answer.board_1;
-			self.vue.board_2 = self.server_answer.board_2;
-			self.turn_counter = self.server_answer.turn_counter;
+            // Parsing and storing the server answer
+            var server_answer = JSON.parse(data.result);
+            self.player_1 = server_answer.player_1;
+            self.player_2 = server_answer.player_2;
+			self.vue.board_1 = server_answer.board_1;
+			self.vue.board_2 = server_answer.board_2;
+			self.turn_counter = server_answer.turn_counter;
 			
 			// Some player is missing, we cannot play yet
             if (self.player_1 === null || self.player_2 === null) {
@@ -146,7 +143,7 @@ var app = function() {
 				
 				// The magic word is available: Let's play!
 				else {
-                    self.update_local_vars(self.server_answer);
+                    self.update_local(server_answer);
                 }
             }
         }
@@ -156,7 +153,7 @@ var app = function() {
 	
 	/*	Updates the local variables with the information provided by the server
 		We should be aware of the possibility of receiving unordered states */
-    self.update_local_vars = function (server_answer) {
+    self.update_local = function (server_answer) {
 		
         /* Reconciles the board, and computes whose turn it is */
         var newer_state_1 = update_layout(self.vue.board_1, server_answer.board_1);
