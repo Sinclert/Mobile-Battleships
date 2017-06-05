@@ -87,12 +87,9 @@ var app = function() {
 		
         // If data is null, we send our data
         if (!data.result) {
-			console.log(data);
             self.player_1 = self.my_identity;
             self.player_2 = null;
 			self.turn_counter = 0;
-            //self.vue.board_1 = getBoard();
-			//self.vue.board_2 = getBoard();
             self.vue.is_my_turn = false;
             self.send_state();
         }
@@ -260,6 +257,24 @@ var app = function() {
 	
 	
 	
+	/* Returns the color of the cell depending on the input symbol */
+	self.get_color = function (symbol) {
+		if (symbol === "*") {
+			return "white";
+		}
+		else if (symbol === "w") {
+			return "blue";
+		}
+		else if (symbol > 0) {
+			return "green";
+		}
+		else if (symbol < 0) {
+			return "red";
+		}
+	}
+	
+	
+	
 	/* Method to call from the HTML */
     self.set_magic_word = function () {
 		
@@ -322,6 +337,7 @@ var app = function() {
             set_magic_word: self.set_magic_word,
 			get_my_board: self.get_my_board,
 			get_opponent_board: self.get_opponent_board,
+			get_color: self.get_color,
             play: self.play
         }
     });
