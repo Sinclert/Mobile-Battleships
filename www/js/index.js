@@ -19,6 +19,7 @@ var app = function() {
 					   " ", " ", " ", " ", " ", " ", " ", " "];
     self.player_1 = null;
     self.player_2 = null;
+	self.ships_left = 10;
 	self.turn_counter = 0;
 	
 	
@@ -315,6 +316,7 @@ var app = function() {
 		try {
 			var new_symbol = -1 * opponent_board[i * 8 + j];
 			Vue.set(opponent_board, i * 8 + j, new_symbol);
+			self.ships_left -= 1;
 		}
 		catch (error) {
 			Vue.set(opponent_board, i * 8 + j, null);
@@ -328,6 +330,22 @@ var app = function() {
 	
 	
 	
+	/* Resets the boards and start a new game */
+	self.new_game = function () {
+		
+		// Only is there is no more ship cells, a new game can be started
+		if (self.ships_left == 0) {
+			self.ships_left = 10;
+			
+			self.vue.board_1 = getBoard();
+			self.vue.board_2 = getBoard();
+			self.turn_counter = 0;
+			self.send_state();
+		}
+	}
+	
+	
+	
 	/* The information about Vue in this project */
     self.vue = new Vue({
         el: "#vue-div",
@@ -338,17 +356,17 @@ var app = function() {
             need_new_magic_word: false,
             board_1: self.null_board,
 			board_2: self.null_board,
-            is_other_present: false,
             is_my_turn: false,
 			message: "Introduce a magic word to start"
         },
         methods: {
-            set_magic_word: self.set_magic_word,
+			set_magic_word: self.set_magic_word,
 			get_my_board: self.get_my_board,
 			get_opponent_board: self.get_opponent_board,
 			get_my_color: self.get_my_color,
 			get_opponent_color: self.get_opponent_color,
-            play: self.play
+			play: self.play,
+			new_game: self.new_game
         }
     });
 	
