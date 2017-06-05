@@ -8,7 +8,7 @@ var app = function() {
 	// Information and fields about the app
     var self = {};
     self.my_identity = randomString(20);
-	self.original_symbols = [1, 2, 3, 4, 5, 6, "*"];
+	self.default_symbols = [1, 2, 3, 4, 5, 6, "*"];
     self.null_board = [" ", " ", " ", " ", " ", " ", " ", " ",
 					   " ", " ", " ", " ", " ", " ", " ", " ",
 					   " ", " ", " ", " ", " ", " ", " ", " ",
@@ -51,21 +51,15 @@ var app = function() {
     function call_server() {
         console.log("Calling the server");
 		
-        if (self.vue.chosen_magic_word === null) {
-            console.log("No magic word");
-            setTimeout(call_server, call_interval);
-        }
-		else {
-            // Add a bit of random delay to avoid synchronizations.
-            var extra_delay = Math.floor(Math.random() * 1000);
-            $.ajax({
-                dataType: 'json',
-                url: server_url +'read',
-                data: {key: self.vue.chosen_magic_word},
-                success: self.process_server_data,
-                complete: setTimeout(call_server, call_interval + extra_delay)
-            });
-        }
+		// Add a bit of random delay to avoid synchronizations.
+		var extra_delay = Math.floor(Math.random() * 1000);
+		$.ajax({
+			dataType: 'json',
+			url: server_url +'read',
+			data: {key: self.vue.chosen_magic_word},
+			success: self.process_server_data,
+			complete: setTimeout(call_server, call_interval + extra_delay)
+		});
     }
 	
 	
@@ -93,11 +87,12 @@ var app = function() {
 		
         // If data is null, we send our data
         if (!data.result) {
+			console.log(data);
             self.player_1 = self.my_identity;
             self.player_2 = null;
 			self.turn_counter = 0;
-            self.vue.board_1 = self.null_board;
-			self.vue.board_2 = self.null_board;
+            //self.vue.board_1 = getBoard();
+			//self.vue.board_2 = getBoard();
             self.vue.is_my_turn = false;
             self.send_state();
         }
@@ -182,26 +177,22 @@ var app = function() {
 	/* Updates the specified layout position from the specified server layout */
 	function update_layout (local_board, server_board) {
 		
-		var device_has_newer_state = false;
+		var newer_state = false;
 		for (var i = 0 ; i < 64 ; i++) {
 			
 			// The server has new information for this board
-			if (local_board[i] === ' ' || server_board[i] !== ' ') {
+			if (self.default_symbols.includes(local_board[i]) && 
+				!self.default_symbols.includes(server_board[i])) {
 				Vue.set(local_board, i, server_board[i]);
 			}
 
 			// The device has newer state
-			else if (local_board[i] !== ' ' && server_board[i] === ' ') {
-				device_has_newer_state = true;
-			}
-
-			else if ((local_board[i] !== server_board[i]) && (local_board[i] !== ' ') && (server_board[i] !== ' ')) {
-				console.log("Board inconsistency at: " + i);
-				console.log("Local:" + local_board[i]);
-				console.log("Server:" + server_board[i]);
+			else if (!self.default_symbols.includes(local_board[i]) && 
+					 self.default_symbols.includes(server_board[i])) {
+				newer_state = true;
 			}
 		}
-		return device_has_newer_state;
+		return newer_state;
 	}
 	
 	
@@ -279,6 +270,9 @@ var app = function() {
         self.vue.board_1 = getBoard();
 		self.vue.board_2 = getBoard();
         self.vue.is_my_turn = false;
+		
+		// Start the server calls
+		call_server();
     };
 	
 	
@@ -288,13 +282,20 @@ var app = function() {
 		
 		var opponent_board = self.get_opponent_board();
 		
-		// Check if it is not our turn or the square is not empty
-		if ((!self.vue.is_my_turn) || (opponent_board[i * 8 + j] !== ' ')) {
+		// Check if it is not our turn or the square has been clicked before
+		if (!self.vue.is_my_turn || !self.default_symbols.includes(opponent_board[i * 8 + j])) {
 			return;
 		}
 		
-		Vue.set(opponent_board, i * 8 + j, 'X');
-        
+		// Updating the interface once clicked
+		try {
+			var new_symbol = -1 * opponent_board[i * 8 + j];
+			Vue.set(opponent_board, i * 8 + j, new_symbol);
+		}
+		catch (error) {
+			Vue.set(opponent_board, i * 8 + j, "w");
+		}
+		
         // Update the server state
         self.vue.is_my_turn = false;
 		self.turn_counter += 1;
@@ -324,9 +325,8 @@ var app = function() {
             play: self.play
         }
     });
-
 	
-    call_server();
+	
     return self;
 };
 
