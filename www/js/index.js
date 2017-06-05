@@ -8,6 +8,7 @@ var app = function() {
 	// Information and fields about the app
     var self = {};
     self.my_identity = randomString(20);
+	self.original_symbols = [1, 2, 3, 4, 5, 6, "*"];
     self.null_board = [" ", " ", " ", " ", " ", " ", " ", " ",
 					   " ", " ", " ", " ", " ", " ", " ", " ",
 					   " ", " ", " ", " ", " ", " ", " ", " ",
@@ -79,6 +80,7 @@ var app = function() {
 				'player_1': self.player_1,
 				'player_2': self.player_2,
 				'board_1': self.vue.board_1,
+				'board_2': self.vue.board_2,
 				'turn_counter': self.turn_counter
 			})
 		});
@@ -95,6 +97,7 @@ var app = function() {
             self.player_2 = null;
 			self.turn_counter = 0;
             self.vue.board_1 = self.null_board;
+			self.vue.board_2 = self.null_board;
             self.vue.is_my_turn = false;
             self.send_state();
         }
@@ -162,35 +165,44 @@ var app = function() {
     self.update_local_vars = function (server_answer) {
 
         /* Reconciles the board, and computes whose turn it is */
-        var device_has_newer_state = false;
-        for (var i = 0 ; i < 64 ; i++) {
-			
-			// The server has new information for this board
-            if (self.vue.board_1[i] === ' ' || server_answer.board_1[i] !== ' ') {
-                Vue.set(self.vue.board_1, i, server_answer.board_1[i]);
-            }
-			
-			// The device has newer state
-			else if (self.vue.board_1[i] !== ' ' && server_answer.board_1[i] === ' ') {
-                device_has_newer_state = true;
-            }
-			
-			else if (self.vue.board_1[i] !== server_answer.board_1[i]
-                && self.vue.board_1[i] !== ' ' && server_answer.board_1[i] !== ' ')  {
-                console.log("Board inconsistency at: " + i);
-                console.log("Local:" + self.vue.board_1[i]);
-                console.log("Server:" + server_answer.board_1[i]);
-            }
-        }
+        var newer_state_1 = update_layout(self.vue.board_1, server_answer.board_1);
+		var newer_state_2 = update_layout(self.vue.board_2, server_answer.board_2);
 
         // Compute if it is my turn based on the reconciled board
-        self.vue.is_my_turn = ((self.vue.board_1 !== null) && whose_turn(server_answer.turn_counter));
+        self.vue.is_my_turn = whose_turn(server_answer.turn_counter);
 
         // If we have newer state than the server, we send it to the server
-        if (device_has_newer_state) {
+        if (newer_state_1 || newer_state_2) {
             self.send_state();
         }
     };
+	
+	
+	
+	/* Updates the specified layout position from the specified server layout */
+	function update_layout (local_board, server_board) {
+		
+		var device_has_newer_state = false;
+		for (var i = 0 ; i < 64 ; i++) {
+			
+			// The server has new information for this board
+			if (local_board[i] === ' ' || server_board[i] !== ' ') {
+				Vue.set(local_board, i, server_board[i]);
+			}
+
+			// The device has newer state
+			else if (local_board[i] !== ' ' && server_board[i] === ' ') {
+				device_has_newer_state = true;
+			}
+
+			else if ((local_board[i] !== server_board[i]) && (local_board[i] !== ' ') && (server_board[i] !== ' ')) {
+				console.log("Board inconsistency at: " + i);
+				console.log("Local:" + local_board[i]);
+				console.log("Server:" + server_board[i]);
+			}
+		}
+		return device_has_newer_state;
+	}
 	
 	
 	
@@ -215,6 +227,48 @@ var app = function() {
 	
 	
 	
+	/* Returns out layout depending on the player we are */
+	self.get_my_board = function () {
+		
+		// If the game has started and we are player 1
+		if (self.my_identity === self.player_1 && self.vue.board_1 !== null) {
+			return self.vue.board_1;
+		}
+		
+		// If the game has started and we are player 2
+		else if (self.my_identity === self.player_2 && self.vue.board_2 !== null) {
+			return self.vue.board_2;
+		}
+		
+		// If the game has not been initialized
+		else {
+			return self.null_board;
+		}
+	}
+	
+	
+	
+	/* Returns out layout depending on the player we are */
+	self.get_opponent_board = function () {
+		
+		// If the game has started and we are player 1
+		if (self.my_identity === self.player_1 && self.vue.board_2 !== null) {
+			return self.vue.board_2;
+		}
+		
+		// If the game has started and we are player 2
+		else if (self.my_identity === self.player_2 && self.vue.board_1 !== null) {
+			return self.vue.board_1;
+		}
+		
+		// If the game has not been initialized
+		else {
+			return self.null_board;
+		}
+	}
+	
+	
+	
 	/* Method to call from the HTML */
     self.set_magic_word = function () {
 		
@@ -222,7 +276,8 @@ var app = function() {
         self.vue.need_new_magic_word = false;
 		
         // Resets board and turn
-        self.vue.board_1 = self.null_board;
+        self.vue.board_1 = getBoard();
+		self.vue.board_2 = getBoard();
         self.vue.is_my_turn = false;
     };
 	
@@ -231,14 +286,15 @@ var app = function() {
 	/* Method to call from the HTML */
     self.play = function (i, j) {
 		
-        // Check if it is not our turn or the square is not empty
-        if ((!self.vue.is_my_turn) || (self.vue.board_1[i * 8 + j] !== ' ')) {
-            return;
-        }
+		var opponent_board = self.get_opponent_board();
 		
-        // Update the clicked position
-        Vue.set(self.vue.board_1, i * 8 + j, 'X');
+		// Check if it is not our turn or the square is not empty
+		if ((!self.vue.is_my_turn) || (opponent_board[i * 8 + j] !== ' ')) {
+			return;
+		}
 		
+		Vue.set(opponent_board, i * 8 + j, 'X');
+        
         // Update the server state
         self.vue.is_my_turn = false;
 		self.turn_counter += 1;
@@ -256,12 +312,15 @@ var app = function() {
             magic_word: "",
             chosen_magic_word: null,
             need_new_magic_word: false,
-            board_1: getBoard(),
+            board_1: self.null_board,
+			board_2: self.null_board,
             is_other_present: false,
             is_my_turn: false
         },
         methods: {
             set_magic_word: self.set_magic_word,
+			get_my_board: self.get_my_board,
+			get_opponent_board: self.get_opponent_board,
             play: self.play
         }
     });
