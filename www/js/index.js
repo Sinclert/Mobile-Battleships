@@ -78,6 +78,7 @@ var app = function() {
 				'turn_counter': self.turn_counter
 			})
 		});
+		console.log(self.vue.board_1);
     };
 	
 	
@@ -89,6 +90,8 @@ var app = function() {
         if (!data.result) {
             self.player_1 = self.my_identity;
             self.player_2 = null;
+			self.vue.board_1 = getBoard();
+			self.vue.board_2 = getBoard();
 			self.turn_counter = 0;
             self.vue.is_my_turn = false;
             self.send_state();
@@ -100,6 +103,8 @@ var app = function() {
             self.server_answer = JSON.parse(data.result);
             self.player_1 = self.server_answer.player_1;
             self.player_2 = self.server_answer.player_2;
+			self.vue.board_1 = self.server_answer.board_1;
+			self.vue.board_2 = self.server_answer.board_2;
 			self.turn_counter = self.server_answer.turn_counter;
 			
 			// Some player is missing, we cannot play yet
@@ -155,7 +160,7 @@ var app = function() {
 	/*	Updates the local variables with the information provided by the server
 		We should be aware of the possibility of receiving unordered states */
     self.update_local_vars = function (server_answer) {
-
+		
         /* Reconciles the board, and computes whose turn it is */
         var newer_state_1 = update_layout(self.vue.board_1, server_answer.board_1);
 		var newer_state_2 = update_layout(self.vue.board_2, server_answer.board_2);
@@ -262,7 +267,7 @@ var app = function() {
 		if (symbol === "*") {
 			return "white";
 		}
-		else if (symbol === "w") {
+		else if (isNaN(symbol)) {
 			return "blue";
 		}
 		else if (symbol > 0) {
@@ -280,10 +285,6 @@ var app = function() {
 		
         self.vue.chosen_magic_word = self.vue.magic_word;
         self.vue.need_new_magic_word = false;
-		
-        // Resets board and turn
-        self.vue.board_1 = getBoard();
-		self.vue.board_2 = getBoard();
         self.vue.is_my_turn = false;
 		
 		// Start the server calls
