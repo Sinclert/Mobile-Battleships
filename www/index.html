@@ -41,10 +41,15 @@
     <div id="vue-div" class="app" style="display:none">
 
         <div class="top_input">
-            <input v-model="magic_word" placeholder="shared magic word" />
+            <input id="magic_word" v-model="magic_word" placeholder="Shared magic word" />
             <button v-on:click="set_magic_word">Play</button>
             <i v-if="need_new_magic_word" class="fa fa-warning"></i>
         </div>
+		
+		<div class="top_input">
+			<span id="players_state">${message}</span>
+			<button v-on:click="set_magic_word">New game</button>
+		</div>
 
         <div class="board container">
             <table>

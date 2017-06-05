@@ -1,32 +1,53 @@
-/* line 1, ../sass/_main.scss */
+/* Line 1, ../sass/_main.scss */
 .colorful {
 	color: #bb8833;
 }
 
-/* line 4, ../sass/_main.scss */
+/* Line 4, ../sass/_main.scss */
 .app {
-	width: 70%;
+	width: 60%;
 	margin-top: 50px;
-	margin-left: 15%;
-	margin-right: 15%;
+	margin-left: 20%;
+	margin-right: 20%;
 }
 
-/* line 10, ../sass/_main.scss */
+/* Line 10, ../sass/_main.scss */
 .app .board {
 	width: 100%;
 	margin-bottom: 50px;
 }
 
-/* line 12, ../sass/_main.scss */
+/* Line 12, ../sass/_main.scss */
 .app .board table {
 	width: 100%;
 	cursor: pointer;
 }
 
-/* line 15, ../sass/_main.scss */
+/* Line 15, ../sass/_main.scss */
 .app .board td {
 	width: 12.5%;
-	height: 50px;
+	height: 40px;
 	text-align: center;
 	border: solid 2px black;
+}
+
+
+/***** My own modifications *****/
+.top_input {
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.top_input button {
+	width: 20%;
+	float: right;
+	margin 0;
+}
+
+#magic_word {
+	width: 75%;
+}
+
+#players_state {
+	width: 75%;
 }

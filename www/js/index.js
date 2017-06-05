@@ -1,7 +1,7 @@
 // Author: Sinclert Perez (Sinclert@hotmail.com)
 
 
-/* Contains the web application functionalities*/
+/* Contains the web application functionalities */
 var app = function() {
 	
 	
@@ -103,16 +103,15 @@ var app = function() {
 			
 			// Some player is missing, we cannot play yet
             if (self.player_1 === null || self.player_2 === null) {
-				console.log("Not all players present");
                 self.vue.is_my_turn = false;
                 
 				// We are already present, nothing to do
                 if (self.player_2 === self.my_identity || self.player_1 === self.my_identity) {
-                    console.log("Waiting for other player to join");
+                    self.vue.message = "Waiting for other player to join";
                 }
 				
 				else {
-                    console.log("Signing up now");
+                    self.vue.message = "Signing up...");
 					
                     // If it is free, try to play as player 1
                     if (self.player_1 === null) {
@@ -134,10 +133,11 @@ var app = function() {
 			
 			// Both players are present, we can try to play
 			else {
-                console.log("Both players are present");
+                self.vue.message = "Both players are present";
 				
 				// We are intruding in a game that already exist
                 if (self.player_1 !== self.my_identity && self.player_2 !== self.my_identity) {
+					self.vue.message = "The magic word is already taken";
                     self.vue.need_new_magic_word = true;
                 }
 				
@@ -341,7 +341,8 @@ var app = function() {
             board_1: self.null_board,
 			board_2: self.null_board,
             is_other_present: false,
-            is_my_turn: false
+            is_my_turn: false,
+			message: "Introduce a magic word to start"
         },
         methods: {
             set_magic_word: self.set_magic_word,
