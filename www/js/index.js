@@ -111,7 +111,7 @@ var app = function() {
                 }
 				
 				else {
-                    self.vue.message = "Signing up...");
+                    self.vue.message = "Signing up...";
 					
                     // If it is free, try to play as player 1
                     if (self.player_1 === null) {
@@ -197,17 +197,15 @@ var app = function() {
     function whose_turn(turn_counter) {
 		
 		// If the number is even and we are player 1: our turn
-		if ((turn_counter % 2 === 0) && (self.my_identity === self.player_1)){
-			return true;
-		}
-		
-		// If the number is odd and we are player 2: our turn
-		else if ((turn_counter % 2 === 1) && (self.my_identity === self.player_2)){
+		if (((turn_counter % 2 === 0) && (self.my_identity === self.player_1)) ||
+			 (turn_counter % 2 === 1) && (self.my_identity === self.player_2)) {
+			self.vue.message = "Your turn"
 			return true;
 		}
 		
 		// Otherwise: it is not our turn
 		else {
+			self.vue.message = "Waiting for the other player..."
 			return false;
 		}
     }

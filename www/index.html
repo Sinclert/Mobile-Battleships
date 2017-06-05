@@ -29,7 +29,7 @@
         <link href="css/stupid.css" rel="stylesheet" type="text/css"/>
         <link href="font-awesome-4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
-        <title>Cordova Starter App, CMPS 121</title>
+        <title>Battleship game: CMPS 121</title>
         <script type="text/javascript" src="js/jquery.js"></script>
         <script type="text/javascript" src="js/vue.js"></script>
         <script type="text/javascript" src="js/randomString.js"></script>
@@ -43,7 +43,6 @@
         <div class="top_input">
             <input id="magic_word" v-model="magic_word" placeholder="Shared magic word" />
             <button v-on:click="set_magic_word">Play</button>
-            <i v-if="need_new_magic_word" class="fa fa-warning"></i>
         </div>
 		
 		<div class="top_input">
@@ -69,10 +68,6 @@
                     </td>
                 </tr>
             </table>
-        </div>
-		
-        <div v-if="is_my_turn" class="turn_indicators">
-            Your turn to play!
         </div>
 
     </div>
