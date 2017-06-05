@@ -25,7 +25,7 @@ var app = function() {
 	
 	// General variables to use along the app
     var server_url = "https://luca-ucsc-teaching-backend.appspot.com/keystore/";
-    var call_interval = 2000;
+    var call_interval = 1000;
     Vue.config.silent = false;
 	
 	
@@ -49,14 +49,13 @@ var app = function() {
 	
     /* This function calls the server each 'call_internal' ms to update information */
     function call_server() {
-        console.log("Calling the server");
 		
-		// Add a bit of random delay to avoid synchronizations.
+		// Add a bit of random delay to avoid synchronizations
 		var extra_delay = Math.floor(Math.random() * 1000);
 		$.ajax({
 			dataType: 'json',
 			url: server_url +'read',
-			data: {key: self.vue.chosen_magic_word},
+			data: {key: self.vue.magic_word},
 			success: self.process_server_data,
 			complete: setTimeout(call_server, call_interval + extra_delay)
 		});
@@ -68,7 +67,7 @@ var app = function() {
     self.send_state = function () {
         $.post(server_url + 'store', {
 			
-			key: self.vue.chosen_magic_word,
+			key: self.vue.magic_word,
 			val: JSON.stringify({
 				
 				'player_1': self.player_1,
@@ -78,7 +77,6 @@ var app = function() {
 				'turn_counter': self.turn_counter
 			})
 		});
-		console.log(self.vue.board_1);
     };
 	
 	
@@ -93,7 +91,6 @@ var app = function() {
 			self.vue.board_1 = getBoard();
 			self.vue.board_2 = getBoard();
 			self.turn_counter = 0;
-            self.vue.is_my_turn = false;
             self.send_state();
         }
 		
@@ -262,12 +259,12 @@ var app = function() {
 	
 	
 	
-	/* Returns the color of the cell depending on the input symbol */
-	self.get_color = function (symbol) {
+	/* Returns the color of our cell depending on the symbol */
+	self.get_my_color = function (symbol) {
 		if (symbol === "*") {
 			return "white";
 		}
-		else if (isNaN(symbol)) {
+		else if (symbol === null) {
 			return "blue";
 		}
 		else if (symbol > 0) {
@@ -280,10 +277,26 @@ var app = function() {
 	
 	
 	
+	/* Returns the color of the opponent cell depending on the symbol */
+	self.get_opponent_color = function (symbol) {
+		if (symbol === "*") {
+			return "white";
+		}
+		else if (symbol === null) {
+			return "blue";
+		}
+		else if (symbol > 0) {
+			return "white";
+		}
+		else if (symbol < 0) {
+			return "red";
+		}
+	}
+	
+	
+	
 	/* Method to call from the HTML */
     self.set_magic_word = function () {
-		
-        self.vue.chosen_magic_word = self.vue.magic_word;
         self.vue.need_new_magic_word = false;
         self.vue.is_my_turn = false;
 		
@@ -309,7 +322,7 @@ var app = function() {
 			Vue.set(opponent_board, i * 8 + j, new_symbol);
 		}
 		catch (error) {
-			Vue.set(opponent_board, i * 8 + j, "w");
+			Vue.set(opponent_board, i * 8 + j, null);
 		}
 		
         // Update the server state
@@ -327,7 +340,6 @@ var app = function() {
         unsafeDelimiters: ['!{', '}'],
         data: {
             magic_word: "",
-            chosen_magic_word: null,
             need_new_magic_word: false,
             board_1: self.null_board,
 			board_2: self.null_board,
@@ -338,7 +350,8 @@ var app = function() {
             set_magic_word: self.set_magic_word,
 			get_my_board: self.get_my_board,
 			get_opponent_board: self.get_opponent_board,
-			get_color: self.get_color,
+			get_my_color: self.get_my_color,
+			get_opponent_color: self.get_opponent_color,
             play: self.play
         }
     });
