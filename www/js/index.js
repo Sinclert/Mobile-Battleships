@@ -152,45 +152,27 @@ var app = function () {
 
 
 
-	/*	Updates the local variables with the information provided by the server
-		We should be aware of the possibility of receiving unordered states */
+	/*	Updates the local variables with the information provided by the server */
 	self.update_local = function (server_answer) {
 
-		/* Reconciles the board, and computes whose turn it is */
-		var newer_state_1 = update_layout(self.vue.board_1, server_answer.board_1);
-		var newer_state_2 = update_layout(self.vue.board_2, server_answer.board_2);
+		for (var i = 0 ; i < 64 ; i++) {
+			
+			// Updating board_1
+			if (self.default_symbols.includes(self.vue.board_1[i]) ||
+				!self.default_symbols.includes(server_answer.board_1[i])) {
+				Vue.set(self.vue.board_1, i, server_answer.board_1[i]);
+			}
+			
+			// Updating board 2
+			if (self.default_symbols.includes(self.vue.board_2[i]) ||
+				!self.default_symbols.includes(server_answer.board_2[i])) {
+				Vue.set(self.vue.board_2, i, server_answer.board_2[i]);
+			}
+		}
 
 		// Compute if it is my turn based on the reconciled board
 		self.vue.is_my_turn = whose_turn(server_answer.turn_counter);
-
-		// If we have newer state than the server, we send it to the server
-		if (newer_state_1 || newer_state_2) {
-			self.send_state();
-		}
 	};
-
-
-
-	/* Updates the specified layout position from the specified server layout */
-	function update_layout (local_board, server_board) {
-
-		var newer_state = false;
-		for (var i = 0 ; i < 64 ; i++) {
-
-			// The server has new information for this board
-			if (self.default_symbols.includes(local_board[i]) &&
-				!self.default_symbols.includes(server_board[i])) {
-				Vue.set(local_board, i, server_board[i]);
-			}
-
-			// The device has newer state
-			else if (!self.default_symbols.includes(local_board[i]) &&
-					 self.default_symbols.includes(server_board[i])) {
-				newer_state = true;
-			}
-		}
-		return newer_state;
-	}
 
 
 
