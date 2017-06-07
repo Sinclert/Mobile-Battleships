@@ -21,6 +21,7 @@ var app = function () {
 	self.player_2 = null;
 	self.ships_left = 10;
 	self.turn_counter = 0;
+	self.game_counter = 0;
 
 
 	// General variables to use along the app
@@ -72,6 +73,7 @@ var app = function () {
 				'player_2': self.player_2,
 				'board_1': self.vue.board_1,
 				'board_2': self.vue.board_2,
+				'game_counter': self.game_counter,
 				'turn_counter': self.turn_counter
 			})
 		});
@@ -89,6 +91,7 @@ var app = function () {
 			self.vue.board_1 = getBoard();
 			self.vue.board_2 = getBoard();
 			self.turn_counter = 0;
+			self.game_counter = 0;
 			self.send_state();
 		}
 
@@ -142,7 +145,9 @@ var app = function () {
 				}
 
 				// The magic word is available: Let's play!
-				else if (server_answer.turn_counter >= self.turn_counter) {
+				else if (server_answer.game_counter >= self.game_counter || 
+						 server_answer.turn_counter >= self.turn_counter) {
+					self.game_counter = server_answer.game_counter;
 					self.turn_counter = server_answer.turn_counter;
 					self.update_local(server_answer);
 				}
@@ -156,13 +161,13 @@ var app = function () {
 	self.update_local = function (server_answer) {
 
 		for (var i = 0 ; i < 64 ; i++) {
-			
+
 			// Updating board_1
 			if (self.default_symbols.includes(self.vue.board_1[i]) ||
 				!self.default_symbols.includes(server_answer.board_1[i])) {
 				Vue.set(self.vue.board_1, i, server_answer.board_1[i]);
 			}
-			
+
 			// Updating board 2
 			if (self.default_symbols.includes(self.vue.board_2[i]) ||
 				!self.default_symbols.includes(server_answer.board_2[i])) {
@@ -297,7 +302,7 @@ var app = function () {
 
 		// Updating the interface once clicked
 		if (!isNaN(clicked_position)) {
-			Vue.set(opponent_board, i * 8 + j, -1 * clicked_position);
+			Vue.set(opponent_board, (i*8) + j, -1 * clicked_position);
 			self.ships_left -= 1;
 
 			// Updates the board if an enemy boat is sunk
@@ -376,6 +381,7 @@ var app = function () {
 			self.ships_left = 10;
 			self.vue.board_1 = getBoard();
 			self.vue.board_2 = getBoard();
+			self.game_counter += 1;
 			self.turn_counter = 0;
 			self.send_state();
 		}
