@@ -199,36 +199,21 @@ var app = function () {
 
 
 	/* Returns out layout depending on the player we are */
-	self.get_my_board = function () {
+	self.get_board = function (which_board) {
 
-		// If the game has started and we are player 1
-		if (self.identity === self.player_1 && self.vue.board_1 !== null) {
+		if (self.identity === self.player_1 && which_board === "my") {
 			return self.vue.board_1;
 		}
 
-		// If the game has started and we are player 2
-		else if (self.identity === self.player_2 && self.vue.board_2 !== null) {
+		else if (self.identity === self.player_1 && which_board === "opponent") {
 			return self.vue.board_2;
 		}
-
-		// If the game has not been initialized
-		else {
-			return self.null_board;
-		}
-	};
-
-
-
-	/* Returns out layout depending on the player we are */
-	self.get_opponent_board = function () {
-
-		// If the game has started and we are player 1
-		if (self.identity === self.player_1 && self.vue.board_2 !== null) {
+		
+		else if (self.identity === self.player_2 && which_board === "my") {
 			return self.vue.board_2;
 		}
-
-		// If the game has started and we are player 2
-		else if (self.identity === self.player_2 && self.vue.board_1 !== null) {
+		
+		else if (self.identity === self.player_2 && which_board === "opponent") {
 			return self.vue.board_1;
 		}
 
@@ -240,33 +225,18 @@ var app = function () {
 
 
 
-	/* Returns the color of our cell depending on the symbol */
-	self.get_my_color = function (symbol) {
+	/* Returns the color of a cell given a board and a symbol */
+	self.get_color = function (which_board, symbol) {
 		if (symbol === "*") {
 			return "white";
 		}
 		else if (symbol === null) {
 			return "blue";
 		}
-		else if (symbol > 0) {
+		else if (symbol > 0 && which_board === "my") {
 			return "green";
 		}
-		else if (symbol < 0) {
-			return "red";
-		}
-	};
-
-
-
-	/* Returns the color of the opponent cell depending on the symbol */
-	self.get_opponent_color = function (symbol) {
-		if (symbol === "*") {
-			return "white";
-		}
-		else if (symbol === null) {
-			return "blue";
-		}
-		else if (symbol > 0) {
+		else if (symbol > 0 && which_board === "opponent") {
 			return "white";
 		}
 		else if (symbol < 0) {
@@ -291,7 +261,7 @@ var app = function () {
 	/* Method to call from the HTML */
 	self.play = function (i, j) {
 
-		var opponent_board = self.get_opponent_board();
+		var opponent_board = self.get_board("opponent");
 		var clicked_position = opponent_board[i * 8 + j];
 
 		// Check if it is not our turn or the square has been clicked before
@@ -403,10 +373,8 @@ var app = function () {
 		},
 		methods: {
 			set_magic_word: self.set_magic_word,
-			get_my_board: self.get_my_board,
-			get_opponent_board: self.get_opponent_board,
-			get_my_color: self.get_my_color,
-			get_opponent_color: self.get_opponent_color,
+			get_board: self.get_board,
+			get_color: self.get_color,
 			play: self.play,
 			new_game: self.new_game
 		}
