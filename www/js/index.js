@@ -376,7 +376,7 @@ var app = function () {
 		});
 
 		// Marking already analyzed positions to avoid infinite recursive loop
-		opponent_board[i * 8 + j] = -Infinity;
+		opponent_board[i * 8 + j] = -100;
 
 		// If there are more cells already sunk: recursive calls
 		adjacent_sunk_cells.forEach(function(cell) {
@@ -392,7 +392,6 @@ var app = function () {
 		// Only is there is no more ship cells, a new game can be started
 		if (self.ships_left == 0) {
 			self.ships_left = 10;
-
 			self.vue.board_1 = getBoard();
 			self.vue.board_2 = getBoard();
 			self.turn_counter = 0;
