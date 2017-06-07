@@ -7,7 +7,7 @@ var app = function () {
 
 	// Information and fields about the app
 	var self = {};
-	self.my_identity = randomString(20);
+	self.identity = randomString(20);
 	self.default_symbols = [1, 2, 3, 4, 5, 6, "*"];
 	self.null_board = [" ", " ", " ", " ", " ", " ", " ", " ",
 					   " ", " ", " ", " ", " ", " ", " ", " ",
@@ -86,7 +86,7 @@ var app = function () {
 
 		// The first player to introduce the magic word generates the boards
 		if (!data.result) {
-			self.player_1 = self.my_identity;
+			self.player_1 = self.identity;
 			self.player_2 = null;
 			self.vue.board_1 = getBoard();
 			self.vue.board_2 = getBoard();
@@ -113,7 +113,7 @@ var app = function () {
 				self.vue.is_my_turn = false;
 
 				// We are already present, nothing to do
-				if (self.player_2 === self.my_identity || self.player_1 === self.my_identity) {
+				if (self.player_2 === self.identity || self.player_1 === self.identity) {
 					self.vue.message = "Waiting for other player to join";
 				}
 
@@ -122,12 +122,12 @@ var app = function () {
 
 					// If it is free, try to play as player 1
 					if (self.player_1 === null) {
-						self.player_1 = self.my_identity;
+						self.player_1 = self.identity;
 						self.send_state();
 					}
 					// Otherwise, try to play as player 2
 					else if (self.player_2 === null) {
-						self.player_2 = self.my_identity;
+						self.player_2 = self.identity;
 						self.send_state();
 					}
 
@@ -143,7 +143,7 @@ var app = function () {
 			else {
 
 				// We are intruding in a game that already exist
-				if (self.player_1 !== self.my_identity && self.player_2 !== self.my_identity) {
+				if (self.player_1 !== self.identity && self.player_2 !== self.identity) {
 					self.vue.message = "The magic word is already taken";
 					self.vue.need_new_magic_word = true;
 				}
@@ -183,8 +183,8 @@ var app = function () {
 	function whose_turn (turn_counter) {
 
 		// If the number is even and we are player 1: our turn
-		if (((turn_counter % 2 === 0) && (self.my_identity === self.player_1)) ||
-			 (turn_counter % 2 === 1) && (self.my_identity === self.player_2)) {
+		if (((turn_counter % 2 === 0) && (self.identity === self.player_1)) ||
+			 (turn_counter % 2 === 1) && (self.identity === self.player_2)) {
 			self.vue.message = "Your turn"
 			return true;
 		}
@@ -202,12 +202,12 @@ var app = function () {
 	self.get_my_board = function () {
 
 		// If the game has started and we are player 1
-		if (self.my_identity === self.player_1 && self.vue.board_1 !== null) {
+		if (self.identity === self.player_1 && self.vue.board_1 !== null) {
 			return self.vue.board_1;
 		}
 
 		// If the game has started and we are player 2
-		else if (self.my_identity === self.player_2 && self.vue.board_2 !== null) {
+		else if (self.identity === self.player_2 && self.vue.board_2 !== null) {
 			return self.vue.board_2;
 		}
 
@@ -223,12 +223,12 @@ var app = function () {
 	self.get_opponent_board = function () {
 
 		// If the game has started and we are player 1
-		if (self.my_identity === self.player_1 && self.vue.board_2 !== null) {
+		if (self.identity === self.player_1 && self.vue.board_2 !== null) {
 			return self.vue.board_2;
 		}
 
 		// If the game has started and we are player 2
-		else if (self.my_identity === self.player_2 && self.vue.board_1 !== null) {
+		else if (self.identity === self.player_2 && self.vue.board_1 !== null) {
 			return self.vue.board_1;
 		}
 
@@ -278,6 +278,7 @@ var app = function () {
 
 	/* Method to call from the HTML */
 	self.set_magic_word = function () {
+		self.vue.magic_word = $("#magic_word").val();
 		self.vue.need_new_magic_word = false;
 		self.vue.is_my_turn = false;
 
