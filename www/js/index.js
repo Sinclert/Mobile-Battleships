@@ -265,7 +265,8 @@ var app = function () {
 		var clicked_position = opponent_board[i * 8 + j];
 
 		// Check if it is not our turn or the square has been clicked before
-		if (!self.vue.is_my_turn || !self.default_symbols.includes(clicked_position)) {
+		if (!self.vue.is_my_turn || self.ships_left === 0 || 
+			!self.default_symbols.includes(clicked_position) ) {
 			return;
 		}
 
@@ -279,6 +280,11 @@ var app = function () {
 		}
 		else {
 			Vue.set(opponent_board, i * 8 + j, null);
+		}
+
+		// If there is none ships left: show message
+		if (self.ships_left === 0) {
+			self.vue.message = "The game is finished";
 		}
 
 		// Update the server state
