@@ -101,8 +101,12 @@ var app = function () {
 			var server_answer = JSON.parse(data.result);
 			self.player_1 = server_answer.player_1;
 			self.player_2 = server_answer.player_2;
-			self.vue.board_1 = server_answer.board_1;
-			self.vue.board_2 = server_answer.board_2;
+
+			// If it is the first turn, the boards are copied
+			if (self.turn_counter === 0) {
+				self.vue.board_1 = server_answer.board_1;
+				self.vue.board_2 = server_answer.board_2;
+			}
 
 			// Some player is missing, we cannot play yet
 			if (self.player_1 === null || self.player_2 === null) {
@@ -129,14 +133,14 @@ var app = function () {
 
 					// The magic word is already taken
 					else {
+						self.vue.message = "Both players are present";
 						self.vue.need_new_magic_word = true;
 					}
 				}
 			}
 
-			// Both players are present, we can try to play
+			// Both players are present
 			else {
-				self.vue.message = "Both players are present";
 
 				// We are intruding in a game that already exist
 				if (self.player_1 !== self.my_identity && self.player_2 !== self.my_identity) {
@@ -144,9 +148,15 @@ var app = function () {
 					self.vue.need_new_magic_word = true;
 				}
 
-				// The magic word is available: Let's play!
-				else if (server_answer.game_counter >= self.game_counter || 
+				// The magic word is available and it is the same game
+				else if (server_answer.game_counter === self.game_counter && 
 						 server_answer.turn_counter >= self.turn_counter) {
+					self.turn_counter = server_answer.turn_counter;
+					self.update_local(server_answer);
+				}
+
+				// The magic word is available but it is another game
+				else if (server_answer.game_counter > self.game_counter) {
 					self.game_counter = server_answer.game_counter;
 					self.turn_counter = server_answer.turn_counter;
 					self.update_local(server_answer);
@@ -157,23 +167,11 @@ var app = function () {
 
 
 
-	/*	Updates the local variables with the information provided by the server */
+	/* Updates the local variables with the information provided by the server */
 	self.update_local = function (server_answer) {
-
-		for (var i = 0 ; i < 64 ; i++) {
-
-			// Updating board_1
-			if (self.default_symbols.includes(self.vue.board_1[i]) ||
-				!self.default_symbols.includes(server_answer.board_1[i])) {
-				Vue.set(self.vue.board_1, i, server_answer.board_1[i]);
-			}
-
-			// Updating board 2
-			if (self.default_symbols.includes(self.vue.board_2[i]) ||
-				!self.default_symbols.includes(server_answer.board_2[i])) {
-				Vue.set(self.vue.board_2, i, server_answer.board_2[i]);
-			}
-		}
+		
+		self.vue.board_1 = server_answer.board_1;
+		self.vue.board_2 = server_answer.board_2;
 
 		// Compute if it is my turn based on the reconciled board
 		self.vue.is_my_turn = whose_turn(server_answer.turn_counter);
@@ -193,7 +191,7 @@ var app = function () {
 
 		// Otherwise: it is not our turn
 		else {
-			self.vue.message = "Waiting for the other player..."
+			self.vue.message = "Waiting for the other player to play"
 			return false;
 		}
 	}
