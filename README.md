@@ -9,6 +9,8 @@ The game itself consist on two rectangular grids (one for our ships, and the oth
 * Two boats of 3 cells long.
 * One boat of 4 cells long.
 
+</div><img src="./Example.png" width="550" height="800"/>
+
 ## What is in the repository?
 All the code to make the web application work is inside the <i>www</i> folder. Within that folder, There is only 4 files that are relevant from the programmer point of view, because most of them are there just to provide functionality to these 4 files:
 * <b>index.html</b>: provides the skeleton of the web app. It additionally imports some important CSS and JS files such as the <a href="https://jquery.com">JQuery</a> and <a href="https://vuejs.org">Vue</a> libraries. 
