@@ -4,7 +4,7 @@ This project is a web application to play the <a href="https://en.wikipedia.org/
 ## How does it work?
 As any web application, in order to achieve the proper functionality (play online), the files need to be upload to a hosting service. However, in order to test its correct execution, we could deploy the project using <a href="https://cordova.apache.org">Apache Cordova</a> and simulate a battle between two players using two browser tabs.
 <br><br>
-The game itself consist on two rectangular grids (one for our ships, and the other one for the opponent ships) in which the user is suppose to destroy the other player ships before their own are sunk. Both users need to specify a <b><i>magic word</i></b> which will act as game identifier, allowing two users to play together if they specify the same magic word. If there exist another user with the same magic word, the game starts and the grids are filled with:
+The game itself consists on two rectangular grids (one for our ships, and the other one for the opponent ships) in which the user is suppose to destroy the other player ships before their own are sunk. Both users need to specify a <b><i>magic word</i></b> which will act as game identifier, allowing two users to play together if they specify the same magic word. If there is another player with the same magic word, the game starts and the grids are filled with:
 * Three boats of 2 cells long.
 * Two boats of 3 cells long.
 * One boat of 4 cells long.
